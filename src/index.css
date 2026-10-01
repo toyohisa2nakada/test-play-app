@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", system-ui, sans-serif;
+  /* カテゴリ色（4分類）: dataviz 既定パレットの先頭4スロット */
+  --color-agon: #2a78d6;
+  --color-alea: #eb6834;
+  --color-mimicry: #1baf7a;
+  --color-ilinx: #eda100;
+  /* 3択（はい / どちらとも / いいえ）: 青—灰—赤の発散配色 */
+  --color-yes: #2a78d6;
+  --color-mid: #d9d8d4;
+  --color-no: #e34948;
+  --color-surface: #fcfcfb;
+  --color-ink: #0b0b0b;
+  --color-ink2: #52514e;
+  --color-ink3: #8a8984;
+}
+
+body { background: var(--color-surface); color: var(--color-ink); }
