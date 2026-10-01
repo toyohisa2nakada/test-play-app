@@ -4,6 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 // base: './' なので GitHub Pages などのサブパスにそのまま置ける
 export default defineConfig({
-  base: './',
+  base: '/test-play-app/',
   plugins: [react(), tailwindcss()],
 })
