@@ -129,7 +129,7 @@ export default function Host({ room }: { room: string }) {
     <div className="h-dvh flex bg-surface overflow-hidden">
       {/* ---- 左：スクリーン用の集計 ---- */}
       <div className="flex-1 min-w-0 flex flex-col p-5 gap-4 overflow-auto">
-        <header className="flex items-start gap-5">
+        <header className="flex items-start gap-5 pr-4">
           <div className="flex-1 min-w-0">
             <div className="text-sm text-ink2">
               {TITLE}
