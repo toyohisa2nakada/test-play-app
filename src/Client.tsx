@@ -87,22 +87,22 @@ export default function Client({ room, fixedCid }: { room: string; fixedCid: str
   const left = TOTAL_POINTS - used
   const condsDone = CONDITIONS.every((c) => conds[c.key] !== undefined)
 
-  const answer: Answer | null = condsDone
-    ? {
-        points,
-        conds: conds as Record<ConditionKey, Tri>,
-        comment: comment.trim().slice(0, 60),
-        at: Date.now(),
-      }
-    : null
+  // その時点の回答全体（未回答の質問は null）
+  const snapshot = (): Answer => ({
+    points,
+    conds: Object.fromEntries(CONDITIONS.map((c) => [c.key, conds[c.key] ?? null])) as Record<ConditionKey, Tri | null>,
+    comment: comment.trim().slice(0, 60),
+    at: Date.now(),
+  })
+  const answer: Answer | null = condsDone ? snapshot() : null
 
-  const submit = () => {
-    if (!answer) return
-    const msg: ToHost = { t: 'submit', cid, answer }
+  // 各画面の「次へ」「結果を見る」で、全体を送ってから次の画面へ
+  const sendAndGo = (next: Step) => {
+    const msg: ToHost = { t: 'submit', cid, answer: snapshot() }
     pendingRef.current = msg
     setSent('sending')
     connRef.current?.send(msg)
-    setStep('result')
+    setStep(next)
   }
 
   const name = '推し活'
@@ -118,9 +118,18 @@ export default function Client({ room, fixedCid }: { room: string; fixedCid: str
       <main className="flex-1 px-4 pb-6">
         {step === 'intro' && (
           <section className="space-y-4">
-            <h2 className="font-bold text-xl leading-snug">あなたの「推し活」の楽しさは、何でできている？</h2>
+            <h2 className="font-bold text-xl leading-snug">あなたの「推し活」の遊び度を分析します</h2>
+            <p className="text-ink2 leading-relaxed">2つのものさしで、あなたの推し活を分析します。</p>
+            <ol className="space-y-2 text-ink2 leading-relaxed list-decimal pl-5">
+              <li>
+                <b className="text-ink">「楽しい」の成分</b>：4つの成分に{TOTAL_POINTS}ポイントを配分します
+              </li>
+              <li>
+                <b className="text-ink">6つの質問</b>：はい／どちらとも／いいえで答えます。ここから、推し活があなたにとってどのくらい「遊び」なのか（<b className="text-ink">遊び度</b>、0〜100%）を出します
+              </li>
+            </ol>
             <p className="text-ink2 leading-relaxed">
-              あなたの推し活の「楽しい」の中身を分析します。回答は匿名で、クラス全体の集計だけがスクリーンに映ります。
+              最後に「結果を見る」を押すと、あなたの分析結果が表示されます。回答は匿名で、スクリーンにはクラス全体の集計だけが映ります。
             </p>
             <p className="text-sm text-ink2 leading-relaxed">
               推しがいない人は、身近な人の推し活や、自分が「推し」に近い気持ちで楽しんでいるもの（作品・キャラクター・チームなど）を思い浮かべて答えてください。
@@ -165,7 +174,7 @@ export default function Client({ room, fixedCid }: { room: string; fixedCid: str
             ))}
             <div className="flex gap-2">
               <Secondary onClick={() => setStep('intro')}>戻る</Secondary>
-              <Primary disabled={left !== 0} onClick={() => setStep('conds')}>
+              <Primary disabled={left !== 0} onClick={() => sendAndGo('conds')}>
                 次へ
               </Primary>
             </div>
@@ -200,7 +209,7 @@ export default function Client({ room, fixedCid }: { room: string; fixedCid: str
             ))}
             <div className="flex gap-2">
               <Secondary onClick={() => setStep('points')}>戻る</Secondary>
-              <Primary disabled={!condsDone} onClick={() => setStep('comment')}>
+              <Primary disabled={!condsDone} onClick={() => sendAndGo('comment')}>
                 次へ
               </Primary>
             </div>
@@ -220,7 +229,7 @@ export default function Client({ room, fixedCid }: { room: string; fixedCid: str
             />
             <div className="flex gap-2">
               <Secondary onClick={() => setStep('conds')}>戻る</Secondary>
-              <Primary onClick={submit}>送信する</Primary>
+              <Primary onClick={() => sendAndGo('result')}>結果を見る</Primary>
             </div>
           </section>
         )}
@@ -230,14 +239,34 @@ export default function Client({ room, fixedCid }: { room: string; fixedCid: str
             <div className="text-sm text-ink2">
               {sent === 'ok' ? '送信しました。スクリーンを見てください' : status === 'online' ? '送信中…' : '接続を待っています（自動で送信します）'}
             </div>
-            <div>
-              <div className="text-ink2 text-sm">あなたにとっての{name}の「遊び度」</div>
-              <div className="text-6xl font-bold tabular-nums">
+            {/* ブロック1：「楽しい」の成分（配分したポイントそのもの） */}
+            <div className="rounded-xl border border-stone-200 bg-white p-4">
+              <h2 className="font-bold text-left">{reveal ? '4分類（カイヨワ）' : '「楽しい」の成分'}</h2>
+              <p className="text-sm text-ink2 text-left">あなたが配分した{TOTAL_POINTS}ポイント</p>
+              <Radar values={COMPONENTS.map((c) => ({ label: reveal ? c.theory : c.short, value: answer.points[c.key], color: c.color }))} max={Math.max(5, ...COMPONENTS.map((c) => answer.points[c.key]))} />
+            </div>
+
+            {/* ブロック2：遊び度（6つの質問だけから計算） */}
+            <div className="rounded-xl border border-stone-200 bg-white p-4">
+              <h2 className="font-bold text-left">{reveal ? '遊び度（カイヨワの6条件から）' : '遊び度（6つの質問から）'}</h2>
+              <div className="text-6xl font-bold tabular-nums my-2">
                 {playScore(answer)}
                 <span className="text-2xl">%</span>
               </div>
+              <ul className="space-y-1.5 text-left">
+                {CONDITIONS.map((c) => {
+                  const v = answer.conds[c.key]
+                  const [label, cls] = v === 1 ? ['はい', 'bg-yes text-white'] : v === 0.5 ? ['どちらとも', 'bg-mid text-ink'] : ['いいえ', 'bg-no text-white']
+                  return (
+                    <li key={c.key} className="flex items-start gap-2 text-sm">
+                      <span className={`shrink-0 w-[5.5em] text-center rounded-md py-0.5 font-bold text-xs ${cls}`}>{label}</span>
+                      <span className="leading-snug">{reveal ? c.theory : c.plain}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+              <p className="text-xs text-ink3 text-left mt-3">はい＝1、どちらとも＝0.5、いいえ＝0 の平均です</p>
             </div>
-            <Radar values={COMPONENTS.map((c) => ({ label: reveal ? c.theory : c.short, value: answer.points[c.key], color: c.color }))} max={Math.max(5, ...COMPONENTS.map((c) => answer.points[c.key]))} />
             <p className="text-sm text-ink2 leading-relaxed text-left">
               隣の人と結果を見せ合って、どこが違うか話してみましょう。
             </p>

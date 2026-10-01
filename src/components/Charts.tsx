@@ -115,7 +115,7 @@ export function CondStack({ s, reveal }: { s: Summary; reveal: boolean }) {
       <div className="space-y-2">
         {CONDITIONS.map((c) => {
           const d = s.cond[c.key]
-          const n = s.n || 1
+          const n = d.yes + d.mid + d.no || 1
           const label = reveal ? c.theory : c.plain
           const parts = [
             ['yes', d.yes, 'var(--color-yes)', 'はい'],

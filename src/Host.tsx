@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DataConnection } from 'peerjs'
 import { QRCodeSVG } from 'qrcode.react'
 import { QUESTION, TITLE } from './content'
-import { binOf, playScore, summarize, type Answer, type Entry, type ToClient, type ToHost } from './model'
+import { binOf, isComplete, playScore, summarize, type Answer, type Entry, type ToClient, type ToHost } from './model'
 import { makeDummies } from './dummy'
 import { joinUrl, newPeer } from './net'
 import { AVG_MAX, CompBars, CondStack, Histogram } from './components/Charts'
@@ -107,7 +107,7 @@ export default function Host({ room }: { room: string }) {
   }, [real, useDummy, dummies])
 
   const s = useMemo(() => summarize(entries), [entries])
-  const highlightBin = lastCid && real[lastCid] ? binOf(playScore(real[lastCid])) : null
+  const highlightBin = lastCid && real[lastCid] && isComplete(real[lastCid]) ? binOf(playScore(real[lastCid])) : null
 
   const comments = useMemo(() => {
     const withText = entries.filter((e) => e.answer.comment)
@@ -161,18 +161,14 @@ export default function Host({ room }: { room: string }) {
         </header>
 
         <div className="grid grid-cols-2 gap-4 flex-1 min-h-0">
-          <Panel no="①" title="「遊び度」の分布" note={`平均 ${s.mean}%　最小 ${s.min}%〜最大 ${s.max}%`}>
-            <Histogram s={s} highlightBin={highlightBin} />
-            <p className="text-sm text-ink2 mt-1">同じ活動でも、人によって「遊び」の度合いは違う？</p>
-          </Panel>
-          <Panel no="②" title={reveal ? '4分類：成分の平均ポイント' : '「楽しい」の成分（平均ポイント）'} note="10ポイント中">
+          <Panel no="①" title={reveal ? '4分類：成分の平均ポイント' : '「楽しい」の成分（平均ポイント）'} note="10ポイント中">
             <CompBars values={s.avgPoints} max={AVG_MAX} unit="" digits={1} reveal={reveal} />
           </Panel>
-          <Panel no="③" title={reveal ? 'カイヨワの6条件' : '6つの質問への回答'}>
+          <Panel no="②" title={reveal ? 'カイヨワの6条件' : '6つの質問への回答'}>
             <CondStack s={s} reveal={reveal} />
           </Panel>
           <Panel
-            no="④"
+            no="③"
             title="いちばん楽しい瞬間"
             action={
               <button onClick={() => setSeed((v) => v + 1)} className="text-sm rounded-md border border-stone-300 bg-white px-2 py-0.5">
@@ -191,6 +187,10 @@ export default function Host({ room }: { room: string }) {
               ))}
               {comments.length === 0 && <li className="text-ink3 text-sm">まだありません</li>}
             </ul>
+          </Panel>
+          <Panel no="④" title="「遊び度」の分布" note={`平均 ${s.mean}%　最小 ${s.min}%〜最大 ${s.max}%`}>
+            <Histogram s={s} highlightBin={highlightBin} />
+            <p className="text-sm text-ink2 mt-1">同じ活動でも、人によって「遊び」の度合いは違う？</p>
           </Panel>
         </div>
       </div>
