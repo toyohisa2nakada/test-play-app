@@ -27,7 +27,7 @@ export default function Host({ room }: { room: string }) {
   const [showPhone, setShowPhone] = useState(true)
   const [phoneKey, setPhoneKey] = useState(0)
   const [peers, setPeers] = useState(0)
-  const [seed, setSeed] = useState(0)
+  const [seed, _setSeed] = useState(0)
   const connsRef = useRef(new Set<DataConnection>())
   const revealRef = useRef(reveal)
   revealRef.current = reveal
