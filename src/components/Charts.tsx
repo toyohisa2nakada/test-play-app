@@ -99,7 +99,7 @@ export function CompBars({ values, max, unit, reveal, digits = 0 }: { values: Re
   )
 }
 
-export const AVG_MAX = TOTAL_POINTS / 2
+export const AVG_MAX = TOTAL_POINTS
 
 /** ③ 6条件：はい / どちらとも / いいえ の100%積み上げ */
 export function CondStack({ s, reveal }: { s: Summary; reveal: boolean }) {

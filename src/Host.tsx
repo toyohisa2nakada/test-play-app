@@ -23,7 +23,7 @@ export default function Host({ room }: { room: string }) {
   const [real, setReal] = useState<Record<string, Answer>>(load)
   const [lastCid, setLastCid] = useState<string | null>(null)
   const [reveal, setReveal] = useState(false)
-  const [useDummy, setUseDummy] = useState(true)
+  const [useDummy, setUseDummy] = useState(false)
   const [showPhone, setShowPhone] = useState(true)
   const [phoneKey, setPhoneKey] = useState(0)
   const [peers, setPeers] = useState(0)
@@ -136,16 +136,8 @@ export default function Host({ room }: { room: string }) {
               <span className="mx-2">|</span>ゲームメディア論 第2回
             </div>
             <h1 className="text-3xl font-bold mt-1">{QUESTION}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink2">
-              <span>
-                回答 <b className="text-ink text-lg tabular-nums">{s.n}</b> 人
-                {useDummy && <span className="ml-1">（うち実回答 {s.nReal}）</span>}
-              </span>
-              <span>接続中の端末 {peers}</span>
-              <HostBadge status={status} />
-            </div>
           </div>
-          <div className="flex flex-col items-end gap-2 shrink-0">
+          <div className="flex flex-col gap-2 shrink-0">
             <div className="flex gap-2">
               <Toggle on={reveal} onClick={() => setReveal((v) => !v)} label="種明かし" strong />
               <Toggle on={useDummy} onClick={() => setUseDummy((v) => !v)} label="架空の44人" />
@@ -153,6 +145,14 @@ export default function Host({ room }: { room: string }) {
               <button onClick={reset} className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm">
                 リセット
               </button>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink2">
+              <span>
+                回答 <b className="text-ink text-lg tabular-nums">{s.n}</b> 人
+                {useDummy && <span className="ml-1">（うち実回答 {s.nReal}）</span>}
+              </span>
+              <span>接続中の端末 {peers}</span>
+              <HostBadge status={status} />
             </div>
           </div>
           <a href={url} target="_blank" rel="noreferrer" className="shrink-0 bg-white p-2 rounded-lg border border-stone-200" title={url}>
@@ -171,9 +171,10 @@ export default function Host({ room }: { room: string }) {
             no="③"
             title="いちばん楽しい瞬間"
             action={
-              <button onClick={() => setSeed((v) => v + 1)} className="text-sm rounded-md border border-stone-300 bg-white px-2 py-0.5">
-                入れ替え
-              </button>
+              <></>
+              // <button onClick={() => setSeed((v) => v + 1)} className="text-sm rounded-md border border-stone-300 bg-white px-2 py-0.5">
+              //   入れ替え
+              // </button>
             }
           >
             <ul className="space-y-2.5">
