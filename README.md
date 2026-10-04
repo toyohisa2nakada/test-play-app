@@ -1,4 +1,4 @@
-# 遊びの成分分析（ゲームメディア論 第2回・模擬授業用）
+# 遊びの成分分析
 
 Vite + TypeScript + React + Tailwind CSS v4 + PeerJS。サーバ不要（PeerJSの公開シグナリングサーバのみ使用）。
 
